@@ -1,9 +1,9 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import ChatInterface from '@/components/ChatInterface';
+import ChatInterface from '@/app/components/ChatInterface';
 
-const ParticleBrain = dynamic(() => import('@/components/ParticleBrain'), {
+const ParticleBrain = dynamic(() => import('@/app/components/ParticleBrain'), {
   ssr: false,
   loading: () => <div style={{ width: '100vw', height: '100vh', background: '#000' }} />
 });
