@@ -56,6 +56,25 @@ export default function ParticleBrain() {
                 <ambientLight intensity={0.5} />
                 <Particles />
             </Canvas>
+
+            {/* Name overlay */}
+            <div style={{
+                position: 'absolute', top: '50%', left: '50%',
+                transform: 'translate(-50%, -50%)',
+                pointerEvents: 'none', textAlign: 'center',
+            }}>
+                <div style={{
+                    color: 'rgba(0,255,255,0.15)',
+                    fontFamily: 'monospace',
+                    fontSize: '72px',
+                    fontWeight: 'bold',
+                    letterSpacing: '12px',
+                    textTransform: 'uppercase',
+                    userSelect: 'none',
+                }}>
+                    YATIN
+                </div>
+            </div>
         </div>
     );
 }
