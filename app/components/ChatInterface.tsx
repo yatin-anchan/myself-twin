@@ -13,15 +13,18 @@ export default function ChatInterface() {
     ]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
+    const [listening, setListening] = useState(false);
     const bottomRef = useRef<HTMLDivElement>(null);
+    const recognitionRef = useRef<SpeechRecognition | null>(null);
 
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
-    const send = async () => {
-        if (!input.trim() || loading) return;
-        const userMsg: Message = { role: 'user', content: input.trim() };
+    const send = async (text?: string) => {
+        const content = (text ?? input).trim();
+        if (!content || loading) return;
+        const userMsg: Message = { role: 'user', content };
         const newMessages = [...messages, userMsg];
         setMessages(newMessages);
         setInput('');
@@ -46,6 +49,38 @@ export default function ChatInterface() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const toggleVoice = () => {
+        if (typeof window === 'undefined') return;
+        const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            alert('Voice not supported in this browser. Use Chrome or Edge.');
+            return;
+        }
+
+        if (listening) {
+            recognitionRef.current?.stop();
+            setListening(false);
+            return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-IN';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onstart = () => setListening(true);
+        recognition.onend = () => setListening(false);
+        recognition.onerror = () => setListening(false);
+
+        recognition.onresult = (event: SpeechRecognitionEvent) => {
+            const transcript = event.results[0][0].transcript;
+            send(transcript);
+        };
+
+        recognitionRef.current = recognition;
+        recognition.start();
     };
 
     return (
@@ -103,17 +138,37 @@ export default function ChatInterface() {
                 <div ref={bottomRef} />
             </div>
 
-            {/* Input */}
+            {/* Input Row */}
             <div style={{
                 display: 'flex', gap: '8px', width: '100%',
                 maxWidth: '560px', padding: '0 16px',
                 pointerEvents: 'all'
             }}>
+                {/* Mic Button */}
+                <button
+                    onClick={toggleVoice}
+                    style={{
+                        background: listening
+                            ? 'rgba(255,50,50,0.3)'
+                            : 'rgba(0,255,255,0.08)',
+                        border: listening
+                            ? '1px solid rgba(255,50,50,0.6)'
+                            : '1px solid rgba(0,255,255,0.2)',
+                        borderRadius: '8px', padding: '10px 14px',
+                        color: listening ? '#ff5555' : '#00ffff',
+                        fontFamily: 'monospace', fontSize: '16px',
+                        cursor: 'pointer', transition: 'all 0.2s',
+                        animation: listening ? 'pulse 1s infinite' : 'none',
+                    }}
+                >
+                    {listening ? '⏹' : '🎤'}
+                </button>
+
                 <input
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && send()}
-                    placeholder="talk to yatin..."
+                    placeholder={listening ? 'listening...' : 'talk to yatin...'}
                     style={{
                         flex: 1, background: 'rgba(255,255,255,0.05)',
                         border: '1px solid rgba(0,255,255,0.3)',
@@ -123,7 +178,7 @@ export default function ChatInterface() {
                     }}
                 />
                 <button
-                    onClick={send}
+                    onClick={() => send()}
                     disabled={loading}
                     style={{
                         background: 'rgba(0,255,255,0.15)',
@@ -136,6 +191,13 @@ export default function ChatInterface() {
                     send
                 </button>
             </div>
+
+            <style>{`
+        @keyframes pulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(255,50,50,0.4); }
+          50% { box-shadow: 0 0 0 8px rgba(255,50,50,0); }
+        }
+      `}</style>
         </div>
     );
 }
