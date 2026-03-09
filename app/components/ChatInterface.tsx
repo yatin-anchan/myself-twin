@@ -8,9 +8,15 @@ interface Message {
 }
 
 export default function ChatInterface() {
-    const [messages, setMessages] = useState<Message[]>([
-        { role: 'assistant', content: "yo, what's up? ask me anything 👋" }
-    ]);
+    const [messages, setMessages] = useState<Message[]>(() => {
+        if (typeof window === 'undefined') return [
+            { role: 'assistant', content: "yo, what's up? ask me anything 👋" }
+        ];
+        const saved = localStorage.getItem('yatin-clone-messages');
+        return saved ? JSON.parse(saved) : [
+            { role: 'assistant', content: "yo, what's up? ask me anything 👋" }
+        ];
+    });
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [listening, setListening] = useState(false);
@@ -18,7 +24,10 @@ export default function ChatInterface() {
     const recognitionRef = useRef<any>(null);
 
     useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+        if (typeof window === 'undefined') return;
+        // Keep only last 20 messages to avoid hitting storage limits
+        const trimmed = messages.slice(-20);
+        localStorage.setItem('yatin-clone-messages', JSON.stringify(trimmed));
     }, [messages]);
 
     const send = async (text?: string) => {
@@ -91,11 +100,32 @@ export default function ChatInterface() {
         }}>
             {/* Title */}
             <div style={{
-                color: '#00ffff', fontFamily: 'monospace', fontSize: '11px',
-                letterSpacing: '4px', textTransform: 'uppercase',
-                marginBottom: '12px', opacity: 0.6, pointerEvents: 'none'
+                display: 'flex', alignItems: 'center', gap: '16px',
+                marginBottom: '12px', pointerEvents: 'all'
             }}>
-                yatin — digital twin v1.0
+                <div style={{
+                    color: '#00ffff', fontFamily: 'monospace', fontSize: '11px',
+                    letterSpacing: '4px', textTransform: 'uppercase', opacity: 0.6,
+                }}>
+                    yatin — digital twin v1.0
+                </div>
+                <button
+                    onClick={() => {
+                        const fresh = [{ role: 'assistant' as const, content: "yo, what's up? ask me anything 👋" }];
+                        setMessages(fresh);
+                        localStorage.removeItem('yatin-clone-messages');
+                    }}
+                    style={{
+                        background: 'transparent',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '4px', padding: '2px 8px',
+                        color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace',
+                        fontSize: '10px', cursor: 'pointer',
+                        pointerEvents: 'all'
+                    }}
+                >
+                    clear
+                </button>
             </div>
 
             {/* Messages */}
