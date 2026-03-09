@@ -53,7 +53,7 @@ export default function ChatInterface() {
 
     const toggleVoice = () => {
         if (typeof window === 'undefined') return;
-        const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
         if (!SpeechRecognition) {
             alert('Voice not supported in this browser. Use Chrome or Edge.');
             return;
