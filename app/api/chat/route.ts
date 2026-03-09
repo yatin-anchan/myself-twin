@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     const lastMessage = messages[messages.length - 1].content;
 
     const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
         {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -26,4 +26,5 @@ export async function POST(req: NextRequest) {
     const data = await res.json();
     if (!res.ok) return NextResponse.json({ error: data }, { status: 500 });
     return NextResponse.json({ message: data.candidates[0].content.parts[0].text });
-}
+}
+
