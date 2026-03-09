@@ -74,7 +74,7 @@ export default function ChatInterface() {
         recognition.onend = () => setListening(false);
         recognition.onerror = () => setListening(false);
 
-        recognition.onresult = (event: SpeechRecognitionEvent) => {
+        recognition.onresult = (event: any) => {
             const transcript = event.results[0][0].transcript;
             send(transcript);
         };
